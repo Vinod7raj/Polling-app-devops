@@ -1,0 +1,119 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "MAVEN3.9"
+        jdk "JDK17"
+    }
+
+    environment {
+        SONAR_CREDENTIAL = credentials('token')
+        scannerHome = tool('sonar8.0')
+        registryCredential = 'ecr:us-east-1:awscreds'
+        pollingserver = 'https://893493035367.dkr.ecr.us-east-1.amazonaws.com'
+    }
+
+    stages {
+
+        stage('Fetch Code') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'githubauth',
+                    url: 'https://github.com/Vinod7raj/Polling-app-devops.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('polling-devops-k8s/application_code/polling-app-server') {
+                    sh 'mvn install -DskipTests'
+                }
+            }
+            post {
+                success {
+                    echo "Archiving artifact"
+                    archiveArtifacts artifacts: '**/*.jar'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis - Java Backend') {
+            steps {
+                dir('polling-devops-k8s/application_code/polling-app-server') {
+                    sh '''
+                        mvn clean verify \
+org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+-Dsonar.projectKey=vprofileapp \
+-Dsonar.host.url=http://3.85.61.26:80 \
+-Dsonar.token=$SONAR_CREDENTIAL \
+-DskipTests=true
+                    '''
+                }
+            }
+        }
+
+        stage('SonarQube Analysis - React Frontend') {
+            steps {
+                dir('polling-devops-k8s/application_code/polling-app-client') {
+                    sh '''
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=vprofilefrontend \
+                        -Dsonar.host.url=http://3.85.61.26:80 \
+                        -Dsonar.token=$SONAR_CREDENTIAL
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Image Build') {
+            steps {
+                dir ('polling-devops-k8s/application_code'){
+                sh '''
+                    export BUILD_NUMBER=${BUILD_NUMBER}
+                    docker compose build
+                '''
+                }
+            }
+        }
+
+        stage('Upload to ECR') {
+            steps {
+                script {
+                    docker.withRegistry("${pollingserver}", "${registryCredential}") {
+                        dir ('polling-devops-k8s/application_code'){
+                        sh '''
+                            export BUILD_NUMBER=${BUILD_NUMBER}
+                            docker compose push pollingServer
+                            docker compose push pollingClient
+                        '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy Kubernetes'){
+    steps{
+        sh '''
+        kubectl set image deployment/backend \
+        backend=893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-server:${BUILD_NUMBER} \
+        -n polling
+
+        kubectl set image deployment/frontend \
+        frontend=893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-client:${BUILD_NUMBER} \
+        -n polling
+        '''
+    }
+}
+
+stage('Verify Rollout'){
+    steps{
+        sh '''
+        kubectl rollout status deployment/backend -n polling
+        kubectl rollout status deployment/frontend -n polling
+        '''
+    }
+}
+
+    }
+}
+

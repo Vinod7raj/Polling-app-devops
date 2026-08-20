@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  databaseMysql:
+    image: mysql:5.7
+    container_name: mydatabase
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: callicoder
+      MYSQL_DATABASE: polling_app
+
+  pollingServer:
+    image: 893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-server:${BUILD_NUMBER}
+    build:
+      context: ./polling-app-server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      - databaseMysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://databaseMysql:3306/polling_app?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: callicoder
+
+  pollingClient:
+    image: 893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-client:${BUILD_NUMBER}
+    build:
+      context: ./polling-app-client
+      dockerfile: Dockerfile
+      args:
+        # Pass your EC2 public IP or localhost here so React can talk to the server port
+        - REACT_APP_API_BASE_URL=/api
+    ports: 
+      - "80:80"
+    networks:
+      - frontend
+
+volumes:
+  mysql_data:
+
+networks:
+  frontend:
+  backend:

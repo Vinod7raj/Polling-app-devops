@@ -19,7 +19,7 @@ spec:
       containers:
       - name: backend
         image: 893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-server
-
+        imagePullPolicy: Always 
         ports:
         - containerPort: 8080
 

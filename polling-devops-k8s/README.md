@@ -369,86 +369,86 @@ Only the generated JAR file is copied into the runtime image.
 COPY --from=builder /build/target/*.jar webapp.jar
 ```
 
-### Security*Enhancement
+### Security Enhancement
 
-A dedicated non-root *ser is created:
+A dedicated non-root user is created:
 
 ```dockerfile
-RUN*addgroup -S devops && adduser -S v*nod -G devops
-``*
+RUN addgroup -S devops && adduser -S vinod -G devops
+``
 
 Application execution:
 
-```docke*file
+```dockerfile
 USER vinod
 ```
 
 Benefits:
 
-- *east privilege execution
-- Improve* security posture
-- Reduced contai*er attack surface*
+- Least privilege execution
+- Improve security posture
+- Reduced container attack surface
 Application Port:
 
 ```text
 8080
-`*`
+``
 
 Startup Command:
 
-```*ockerfile
-ENTRYPOINT *"java","-jar","webapp.jar"]
+```Dockerfile
+ENTRYPOINT ["java","-jar","webapp.jar"]
 ```
 
--*-
+--
 
-# Docker Compose Implementation*
-Docker Compose was used for local*orches*ration, multi-container developmen*, and CI/CD image generation.
+# Docker Compose Implementation
+Docker Compose was used for local orchestration, multi-container development, and CI/CD image generation.
 
-Doc*er Compose Version:
+Docker Compose Version:
 
-```yaml*version: '3.8'
+```yaml version: '3.8'
 ```
 
 ---
 
-## Databa*e Service
+## Database Service
 
 Service:
 
 ```text
-datab*seMysql
+databaseMysql
 ```
 
 Image:
 
 ```text
-mysql*5.7
+mysql5.7
 ```
 
 Database:
 
 ```text
-pollin*_app
+polling_app
 ```
 
 Port Mapping:
 
 ```text
-3*06:3306
+3306:3306
 ```
 
 Persistent Storage:
 
-*``text
+``text
 mysql_data
 ```
 
 Features:
 
-* Persistent storage
-- Automatic in*tialization
-- Environment-based co*figuration
+- Persistent storage
+- Automatic initialization
+- Environment-based configuration
 
 
 ---

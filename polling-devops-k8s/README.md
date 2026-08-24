@@ -27,9 +27,20 @@ The project implements:
 - Monitoring using Prometheus and Grafana
 - Automated Deployment Verification
 
----
+## Project Highlights
 
-# Architecture
+- Implemented a complete CI/CD pipeline using Jenkins Declarative Pipeline.
+- Integrated SonarQube for frontend and backend code quality analysis.
+- Built optimized multi-stage Docker images for React and Spring Boot applications.
+- Automated image publishing to Amazon Elastic Container Registry (ECR).
+- Deployed a multi-tier application on Kubernetes using Kops.
+- Implemented NGINX Ingress Controller with path-based routing.
+- Secured workloads using ConfigMaps, Secrets, and Network Policies.
+- Deployed MySQL as a StatefulSet with Persistent Volume Claims.
+- Configured Prometheus and Grafana for Kubernetes monitoring.
+- Implemented readiness and liveness probes for application reliability.
+- Automated rolling deployments and rollout verification.
+- Diagnosed and resolved real-world Kubernetes networking issues involving Network Policies and Ingress traffic routing.# Architecture
 
 ## High-Level Architecture
 
@@ -117,6 +128,39 @@ Prometheus + Grafana
 - Node Exporter
 - kube-state-metrics
 
+## Deployment Workflow
+
+```text
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+Jenkins Pipeline
+    │
+    ▼
+Maven Build
+    │
+    ▼
+SonarQube Analysis
+    │
+    ▼
+Docker Multi-Stage Build
+    │
+    ▼
+Amazon ECR
+    │
+    ▼
+Kubernetes Cluster
+    │
+    ▼
+NGINX Ingress Controller
+    │
+    ▼
+End Users
+
+```
 ## Application Stack
 
 ### Frontend
@@ -420,7 +464,7 @@ pollingServer
 Image:
 
 ```text
-893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-server:${BUILD_NUMBER}
+<ECR_REPOSITORY>/polling-app-server:${BUILD_NUMBER}
 ```
 
 Port Mapping:
@@ -470,7 +514,7 @@ pollingClient
 Image:
 
 ```text
-893493035367.dkr.ecr.us-east-1.amazonaws.com/polling-app-client:${BUILD_NUMBER}
+<ECR_REPOSITORY>/polling-app-client:${BUILD_NUMBER}
 ```
 
 Port Mapping:
@@ -1153,6 +1197,9 @@ Monitored Metrics:
 - Cluster Resources
 
 ---
+# Real-World Troubleshooting Experience
+
+During implementation of the project, multiple production-style issues were encountered across CI/CD, Kubernetes networking, authentication, deployment automation, and cluster configuration. The following section describes the troubleshooting approach, root cause analysis, and resolution steps performed during the project.
 
 # Troubleshooting & Root Cause Analysis
 
@@ -1396,7 +1443,19 @@ Secure and functional ingress-to-backend communication.
 - Automated Rolling Deployments
 - Real-World Kubernetes Troubleshooting
 
----
+--
+
+# Future Enhancements
+
+- Deploy workloads using Helm Charts.
+- Implement GitOps using ArgoCD.
+- Provision infrastructure using Terraform.
+- Migrate workloads to Amazon EKS.
+- Implement centralized logging using Loki or ELK Stack.
+- Configure Horizontal Pod Autoscaling using custom application metrics.
+- Integrate security scanning into the CI/CD pipeline.
+- Implement blue-green deployment strategy.
+- Add Disaster Recovery and Backup automation.-
 
 # Project Outcome
 
